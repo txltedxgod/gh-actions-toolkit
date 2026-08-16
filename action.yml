@@ -1,0 +1,28 @@
+name: "Release & Semver Toolkit"
+description: "Automatically bumps semver versions, generates changelogs and outputs release tags from conventional commits."
+author: "txltedxgod"
+inputs:
+  github-token:
+    description: "GitHub token (e.g. secrets.GITHUB_TOKEN)"
+    required: true
+  tag-prefix:
+    description: "Tag prefix character"
+    default: "v"
+    required: false
+  default-bump:
+    description: "Default fallback bump when no conventional commits found (patch, minor, major)"
+    default: "patch"
+    required: false
+outputs:
+  version:
+    description: "The new calculated semver version (e.g. 1.2.0)"
+  tag:
+    description: "The full tag name (e.g. v1.2.0)"
+  changelog:
+    description: "Markdown formatted changelog section"
+runs:
+  using: "node20"
+  main: "dist/index.js"
+branding:
+  icon: "tag"
+  color: "blue"
