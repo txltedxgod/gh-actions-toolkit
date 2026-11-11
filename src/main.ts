@@ -1,12 +1,15 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { determineBumpType, calculateNextVersion } from './semver';
+import { determineBumpType, calculateNextVersion, BumpType } from './semver';
 import { generateChangelog } from './changelog';
+
+const VALID_BUMPS: ReadonlySet<string> = new Set(['major', 'minor', 'patch', 'none']);
 
 async function run(): Promise<void> {
   try {
     const token = core.getInput('github-token', { required: true });
-    const defaultBump = (core.getInput('default-bump') || 'patch') as any;
+    const rawDefaultBump = (core.getInput('default-bump') || 'patch').trim().toLowerCase();
+    const defaultBump: BumpType = VALID_BUMPS.has(rawDefaultBump) ? (rawDefaultBump as BumpType) : 'patch';
     const tagPrefix = core.getInput('tag-prefix') || 'v';
 
     const octokit = github.getOctokit(token);
@@ -16,7 +19,9 @@ async function run(): Promise<void> {
     let latestTag = '0.1.0';
     try {
       const { data: release } = await octokit.rest.repos.getLatestRelease({ owner, repo });
-      latestTag = release.tag_name.replace(tagPrefix, '');
+      latestTag = tagPrefix && release.tag_name.startsWith(tagPrefix)
+        ? release.tag_name.slice(tagPrefix.length)
+        : release.tag_name;
     } catch {
       core.info('No existing release found, starting with v0.1.0');
     }

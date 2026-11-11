@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.js",
     "bundle": "ncc build src/main.ts -o dist --source-map --license licenses.txt"
   },
   "dependencies": {
