@@ -1,7 +1,13 @@
 import { CommitMessage } from './semver';
 
-export function generateChangelog(version: string, commits: CommitMessage[]): string {
-  const date = new Date().toISOString().split('T')[0];
+const FEAT_RE = /^feat(?:ure)?(?:\([^)\r\n]+\))?!?:/i;
+const FIX_RE = /^fix(?:\([^)\r\n]+\))?!?:/i;
+
+export function generateChangelog(
+  version: string,
+  commits: CommitMessage[],
+  date: string = new Date().toISOString().split('T')[0],
+): string {
   let changelog = `## [${version}] - ${date}\n\n`;
 
   const features: string[] = [];
@@ -9,12 +15,13 @@ export function generateChangelog(version: string, commits: CommitMessage[]): st
   const others: string[] = [];
 
   for (const c of commits) {
-    const firstLine = c.message.split('\n')[0].trim();
-    const shortSha = c.sha.substring(0, 7);
+    const firstLine = (c.message || '').split(/\r?\n/)[0].trim();
+    if (!firstLine) continue;
+    const shortSha = (c.sha || '').trim().substring(0, 7) || 'unknown';
 
-    if (firstLine.startsWith('feat')) {
+    if (FEAT_RE.test(firstLine)) {
       features.push(`- ${firstLine} (${shortSha})`);
-    } else if (firstLine.startsWith('fix')) {
+    } else if (FIX_RE.test(firstLine)) {
       fixes.push(`- ${firstLine} (${shortSha})`);
     } else {
       others.push(`- ${firstLine} (${shortSha})`);
